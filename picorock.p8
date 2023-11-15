@@ -90,7 +90,7 @@ function fov()
                 oy+=dy
             end
             -- check colision 
-            if mget(x,y)>0 or x<0 or y<0  then
+            if mget(x,y)>0 or x<0 or x>20 or y<0 or y>20  then
                 line(i,64-h/d, i, 64+h/d, cs[mget(x,y)])
                 break
             end

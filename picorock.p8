@@ -3,7 +3,7 @@ version 41
 __lua__
 
 px,py,pa = 4.5,4.5,0
-x,y,vx,vy,ox,oy,dx,dy,ix,iy,d=0
+x,y,vx,vy,ox,oy,dx,dy,ix,iy,d,a,fac=0
 sens = 0.01
 speed = 0.05
 h=40
@@ -55,8 +55,11 @@ function fov()
         y=py
 
         -- ray direction fov90 centered on pa
-        vx=cos(pa-(i-64)/512)
-        vy=sin(pa-(i-64)/512)
+        -- a=-(i-64)/512 --panoramic view
+        a= atan2(1,(i-64)/64) -- straight line view
+        vx=cos(pa+a)
+        vy=sin(pa+a)
+        fac=cos(a) -- straight line view
         
         -- standard distance
         dx=abs(1/vx)
@@ -91,6 +94,7 @@ function fov()
             end
             -- check colision 
             if mget(x,y)>0 or x<0 or x>20 or y<0 or y>20  then
+                d*=fac -- straight line view
                 line(i,64-h/d, i, 64+h/d, cs[mget(x,y)])
                 break
             end

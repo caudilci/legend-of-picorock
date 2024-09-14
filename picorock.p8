@@ -1,14 +1,22 @@
 pico-8 cartridge // http://www.pico-8.com
-version 41
+version 42
 __lua__
 
 px,py,pa = 4.5,4.5,0
 x,y,vx,vy,ox,oy,dx,dy,ix,iy,d,a,fac=0
-sens = 0.01
-speed = 0.05
+sens = 0.25
+speed = 1
 h=40
 cs = {13,8,12}
-enemysprites = {0,96}
+enemy_sprites = {0,96}
+move_direction = 1
+move_delay = 10
+move_increment = speed/move_delay
+target_angle = 0
+tx = px
+ty = py
+angle_increment = sens/move_delay
+turn_direction = 0
 
 function _init()
 
@@ -16,36 +24,123 @@ end
 
 function _update()
     // player control
-	if btn(0) then
-		pa+=sens
+    if target_angle != pa then
+        pa += angle_increment * turn_direction
         if pa>1 then
-			pa-=1
-		end
-	end
-	if btn(1) then
-		pa-=sens
+                pa-=1
+        end
         if pa<0 then
-			pa+=1
-		end
-	end
-	if btn(2) then
-		px+=cos(pa)*speed
-		py+=sin(pa)*speed
-	end
-	if btn(3) then
-		px-=cos(pa)*speed
-		py-=sin(pa)*speed
-	end
+                pa+=1
+        end 
+        if ceil(pa * 100)/100 == target_angle or flr(pa*100)/100 == target_angle then
+            pa = target_angle
+        end
+    elseif tx != px or ty != py then
+        move_player()
+    else
+        if btn(0) then
+            target_angle = pa+sens
+            turn_direction = 1
+            if target_angle>1 then
+                target_angle-=1
+            end
+        end
+        if btn(1) then
+            target_angle = pa-sens
+            turn_direction = -1
+            if target_angle<0 then
+                target_angle+=1
+            end
+        end
+        if btn(2) then
+            move_direction = 1
+            set_player_target()
+            move_player()
+        end
+        if btn(3) then
+            move_direction = -1
+            set_player_target()
+            move_player()
+        end
+    end
+
 end
 
 function _draw()
     cls(1)
     rectfill(0,64,128,128,6)
     fov()
-    print(px,2,2,10)
-    print(py,2,10,10)
-    
+    print(tx,2,2,10)
+    print(ty,2,10,10)
+    print(px, 2, 18, 10)
+    print(py, 2, 26, 10)
+end
 
+function move_player()
+    if tx != px then
+        if pa == 0 or pa == 1 then
+            if move_direction > 0 then
+                px += move_increment
+            else
+                px -= move_increment
+            end
+        elseif pa == 0.5 then
+            if move_direction > 0 then
+                px -= move_increment
+            else
+                px += move_increment
+            end
+        end
+    end
+    if ty != py then
+        if pa == 0.25 then
+            if move_direction > 0 then
+                py -= move_increment
+            else
+                py += move_increment
+            end
+        elseif pa == 0.75 then
+            if move_direction > 0 then
+                py += move_increment
+            else
+                py -= move_increment
+            end
+        end
+    end
+    if flr(px*100)/100 == tx or ceil(px*100)/100 == tx then
+        px = tx
+    end
+    if flr(py*100)/100 == ty or ceil(py*100)/100 == ty then
+        py = ty
+    end
+end
+
+function set_player_target()
+    if pa == 0 or pa == 1 then
+        if move_direction > 0 then
+            tx = px + 1
+        else
+            tx = px - 1
+        end
+    elseif pa == 0.25 then
+        if move_direction > 0 then
+            ty = py - 1
+        else
+            ty = py + 1
+        end
+    elseif pa == 0.5 then
+        if move_direction > 0 then
+            tx = px - 1
+        else
+            tx = px + 1
+        end
+    elseif pa == 0.75 then
+        if move_direction > 0 then
+            ty = py + 1
+        else
+            ty = py - 1
+        end
+    end
 end
 
 function fov()
@@ -121,7 +216,7 @@ function draw_enemy()
         for i=0,127 do
 
         end
-       --sspr(enemysprites[1], enemysprites[2],16,16,)
+       --sspr(enemy_sprites[1], enemy_sprites[2],16,16,)
     end
     
 end
